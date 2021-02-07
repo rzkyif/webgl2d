@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Test data for the application. -->
+<!-- You can define multiple <line>, <square>, and <polygon> with <point>s inside in any order. -->
+
+<shapes>
+  <line ax="0" ay="0" bx="100" by="100" color="#ff0000"/>
+  <square x="150" y="150" size="100" color="#00ff00"/>
+  <polygon color="#0000ff">
+    <point x="150" y="0"/>
+    <point x="150" y="100"/>
+    <point x="200" y="75"/>
+    <point x="250" y="0"/>
+  </polygon>
+</shapes>
