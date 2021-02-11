@@ -10,7 +10,7 @@ if (!gl) {
   throw new Error("WebGL is not supported!");
 }
 
-import { initialize, loadXml, render } from "./js/main.js"
+import { initialize, loadXml, render, saveXml } from "./js/main.js"
 
 // initialize WebGL on canvas
 initialize(gl);
@@ -19,7 +19,14 @@ initialize(gl);
 var fs = document.getElementById("f");
 fs.addEventListener('change', (event) => {
   fs.files[0].text().then((text) => {
+    console.log(text);
     loadXml(text);
     render();
   })
+})
+
+var save = document.getElementById('save');
+save.addEventListener('click', (e) =>{
+  e.preventDefault();
+  saveXml();
 })

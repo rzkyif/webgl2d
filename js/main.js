@@ -51,6 +51,24 @@ export function loadXml(xmlText) {
   }
 }
 
+export function saveXml(){
+  var doc = document.implementation.createDocument('','', null);
+  if(!shapes){
+    shapes = [];
+  }
+  console.log("Saving to XML...");
+  var shapesDocument = doc.createElement('shapes');
+
+  for(let i = 0; i < shapes.length; i++){
+    shapesDocument.appendChild(shapes[i].toXML());
+  }
+
+  doc.appendChild(shapesDocument);
+
+  console.log(doc);
+  console.log(doc.documentElement.innerHTML);
+}
+
 // function to render shapes loaded by the loadXml function
 export function render() {
   // prepare canvas 

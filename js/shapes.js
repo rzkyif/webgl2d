@@ -24,6 +24,17 @@ export class Line {
     return [this.ax, this.ay, this.bx, this.by];
   }
 
+  toXML(){
+    var xmlDoc = document.createElement("line");
+    xmlDoc.setAttribute('ax', this.ax.toString());
+    xmlDoc.setAttribute('ay', this.ay.toString());
+    xmlDoc.setAttribute('bx', this.bx.toString());
+    xmlDoc.setAttribute('by', this.by.toString());
+    xmlDoc.setAttribute('color', this.color);
+
+    return xmlDoc;
+  }
+
   static fromXML(xmlObject) {
     let ax = parseFloat(xmlObject.getAttribute("ax"));
     let ay = parseFloat(xmlObject.getAttribute("ay"));
@@ -60,6 +71,16 @@ export class Square {
     ];
   }
 
+  toXML(){
+    var xmlDoc = document.createElement('square');
+    xmlDoc.setAttribute('x', this.x.toString());
+    xmlDoc.setAttribute('y', this.y.toString());
+    xmlDoc.setAttribute('size', this.size.toString());
+    xmlDoc.setAttribute('color', this.color);
+
+    return xmlDoc;
+  }
+
   static fromXML(xmlObject) {
     let x = parseFloat(xmlObject.getAttribute("x"));
     let y = parseFloat(xmlObject.getAttribute("y"));
@@ -87,6 +108,15 @@ export class Point {
     return [
       this.x, this.y, 
     ];
+  }
+
+  toXML(){
+    var xmlDoc = document.createElement('point');
+    xmlDoc.setAttribute('x', this.x.toString());
+    xmlDoc.setAttribute('y', this.y.toString());
+    xmlDoc.setAttribute('color', this.color);
+
+    return xmlDoc;
   }
 
   static fromXML(xmlObject) {
@@ -121,6 +151,16 @@ export class Polygon {
       vectors.push(vector[1]);
     }
     return vectors;
+  }
+
+  toXML(){
+    var xmlDoc = document.createElement('polygon');
+    xmlDoc.setAttribute('color', this.color);
+    for (let i = 0; i < this.points.length; i++){
+      xmlDoc.appendChild(this.points[i].toXML());
+    }
+
+    return xmlDoc;
   }
 
   static fromXML(xmlObject) {
