@@ -62,11 +62,12 @@ export function saveXml(){
   for(let i = 0; i < shapes.length; i++){
     shapesDocument.appendChild(shapes[i].toXML());
   }
-
   doc.appendChild(shapesDocument);
 
-  console.log(doc);
-  console.log(doc.documentElement.innerHTML);
+  var data = new Blob([(new XMLSerializer()).serializeToString(doc)], {type: 'text/xml'});
+  var url = URL.createObjectURL(data);
+
+  document.getElementById('save').href = url;
 }
 
 // function to render shapes loaded by the loadXml function

@@ -27,6 +27,6 @@ fs.addEventListener('change', (event) => {
 
 var save = document.getElementById('save');
 save.addEventListener('click', (e) =>{
-  e.preventDefault();
+  // e.preventDefault();
   saveXml();
 })
