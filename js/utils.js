@@ -2,6 +2,10 @@
     This file contains code that are used in other parts of the application.
 */
 
+export const POINT_SIZE = 10;
+export const POINT_COLOR = "#FFFFFF";
+export const DEFAULT_COLOR = "#000000";
+
 // function to compile shader
 export function createShader(gl, type, source) {
   var shader = gl.createShader(type);
@@ -60,4 +64,76 @@ export function hexToRGB(hex){
     return [(c>>16)&255, (c>>8)&255, c&255];
   }
   throw new Error('Invalid hex code!');
+}
+
+// function to check if coordinate is in a shape
+export function isInside(x_, y_, shape, offset, zoomLevel) {
+  if (isInsidePoint(x_, y_, shape, offset, zoomLevel)) {
+    return true;
+  }
+  let x = (x_ / zoomLevel) - offset[0];
+  let y = (y_ / zoomLevel) - offset[1];
+  if (shape.constructor.name == "Square") {
+    return (x >= shape.x && x <= shape.x + shape.size) && (y >= shape.y && y <= shape.y + shape.size);
+  } else if (shape.constructor.name == "Polygon") {
+    let initial = true;
+    let sign = null;
+    for (let i = 0; i < shape.points.length; i++) {
+      let p1 = shape.points[i];
+      let p2 = (i == shape.points.length - 1) ? shape.points[0] : shape.points[i+1];
+      let cSign = Math.sign((y - p1.y) * (p2.x - p1.x) - (x - p1.x) * (p2.y - p1.y))
+      if (initial) {
+        sign = cSign;
+        initial = false;
+      } else {
+        if (sign != cSign) {
+          return false;
+        }
+      }
+      if (cSign == 0) {
+        return true;
+      }
+    }
+    return true;
+  } else {
+    return false;
+  }
+}
+
+// function returning true if a shape's point is selected
+export function isInsidePoint(x_, y_, shape, offset, zoomLevel) {
+  let x = (x_ / zoomLevel) - offset[0];
+  let y = (y_ / zoomLevel) - offset[1];
+  if (shape.constructor.name == "Square") {
+    for (let i = 0; i < 2; i++) {
+      for (let j = 0; j < 2; j++) {
+        if (distance(x, y, shape.x+shape.size*i, shape.y+shape.size*j) <= POINT_SIZE/2) {
+          return true;
+        }
+      }
+    }
+    return false;
+  } else if (shape.constructor.name == "Polygon") {
+    for (let i = 0; i < shape.points.length; i++) {
+      if (distance(x, y, shape.points[i].x, shape.points[i].y) <= POINT_SIZE/2) {
+        return true;
+      }
+    }
+    return false;
+  } else if (shape.constructor.name == "Line") {
+    if (distance(x, y, shape.ax, shape.ay) <= POINT_SIZE/2) {
+      return true;
+    } else if (distance(x, y, shape.bx, shape.by) <= POINT_SIZE/2) {
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+}
+
+// function returning the distance between two points
+export function distance(ax, ay, bx, by) {
+  return Math.hypot(bx-ax, by-ay);
 }

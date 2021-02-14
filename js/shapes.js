@@ -2,7 +2,7 @@
     This file defines the classes for interpreting between XML and Javascript.
 */
 
-let DEFAULT_COLOR = "#000000";
+import { DEFAULT_COLOR } from './utils.js'
 
 // class to represent lines
 export class Line {

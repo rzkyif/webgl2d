@@ -10,7 +10,7 @@ if (!gl) {
   throw new Error("WebGL is not supported!");
 }
 
-import { initialize, loadXml, render, saveXml } from "./js/main.js"
+import { initialize, loadXml, render, saveXml, addMovement, addZoom } from "./js/main.js"
 
 // initialize WebGL on canvas
 initialize(gl);
@@ -30,3 +30,7 @@ save.addEventListener('click', (e) =>{
   // e.preventDefault();
   saveXml();
 })
+
+// add zoom and movement support
+addZoom(canvas);
+addMovement(canvas);
