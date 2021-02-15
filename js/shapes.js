@@ -24,6 +24,46 @@ export class Line {
     return [this.ax, this.ay, this.bx, this.by];
   }
 
+  getA() {
+    return[this.ax,this.ay];
+  }
+
+  getB() {
+    return [this.bx,this.by];
+  }
+
+  isInRangeA(point) {
+    var range = Math.sqrt(Math.pow(this.ax - point[0]) + Math.pow(this.ay - point[1]));
+    if (range < 5) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  isInRangeB(point) {
+    var range = Math.sqrt(Math.pow(this.bx - point[0]) + Math.pow(this.by - point[1]));
+    if (range < 5) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  setA(ax,ay) {
+    this.ax = ax;
+    this.ay = ay;
+  }
+
+  setB(bx,by) {
+    this.bx = bx;
+    this.by = by;
+  }
+
+  getAllCornerData(){
+    return[this.getA(), this.getB()]
+  }
+
   static fromXML(xmlObject) {
     let ax = parseFloat(xmlObject.getAttribute("ax"));
     let ay = parseFloat(xmlObject.getAttribute("ay"));
@@ -89,6 +129,24 @@ export class Point {
     ];
   }
 
+  getPoint(){
+    return [x,y];
+  }
+
+  setPoint(x,y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  isInRange(point) {
+    var range = Math.sqrt(Math.pow(this.x - point[0]) + Math.pow(this.y - point[1]));
+    if (range < 5) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   static fromXML(xmlObject) {
     let x = parseFloat(xmlObject.getAttribute("x"));
     let y = parseFloat(xmlObject.getAttribute("y"));
@@ -107,6 +165,16 @@ export class Polygon {
     if (color !== null) {
       this.color = color;
     }
+  }
+
+  getPoints(){
+    return this.points;
+  }
+
+  changePoligonPoint(idx, point) {
+    this.points[idx] = point;
+
+    return this.points;
   }
 
   get drawCount() {

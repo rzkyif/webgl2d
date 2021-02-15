@@ -51,6 +51,10 @@ export function loadXml(xmlText) {
   }
 }
 
+export function getShapes(){
+  return shapes;
+}
+
 // function to render shapes loaded by the loadXml function
 export function render() {
   // prepare canvas 

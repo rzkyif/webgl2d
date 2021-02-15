@@ -61,3 +61,24 @@ export function hexToRGB(hex){
   }
   throw new Error('Invalid hex code!');
 }
+
+export function getRelativeMousePosition(event, target) {
+  target = target || event.target;
+  var rect = target.getBoundingClientRect();
+
+  return {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top,
+  }
+}
+
+// assumes target or event.target is canvas
+export function getNoPaddingNoBorderCanvasRelativeMousePosition(event, target) {
+  target = target || event.target;
+  var pos = getRelativeMousePosition(event, target);
+
+  pos.x = pos.x * target.width  / target.clientWidth;
+  pos.y = pos.y * target.height / target.clientHeight;
+
+  return pos;  
+}
