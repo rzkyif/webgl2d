@@ -10,7 +10,7 @@ if (!gl) {
   throw new Error("WebGL is not supported!");
 }
 
-import { initialize, loadXml, render, saveXml, addMovement, addZoom } from "./js/main.js"
+import { initialize, loadXml, render, saveXml, addMovement, addZoom, addLine, addSquare, addPolygon } from "./js/main.js"
 
 // initialize WebGL on canvas
 initialize(gl);
@@ -25,11 +25,31 @@ fs.addEventListener('change', (event) => {
   })
 })
 
-var save = document.getElementById('save');
+// connect save link to save funciton
+var save = document.getElementById('s');
 save.addEventListener('click', (e) =>{
   // e.preventDefault();
   saveXml();
 })
+
+// connect add shape buttons
+var addl = document.getElementById('add-line');
+addl.addEventListener('click', (e) => {addLine()});
+var adds = document.getElementById('add-square');
+adds.addEventListener('click', (e) => {addSquare()});
+var addp = document.getElementById('add-polygon');
+var pc = document.getElementById("polygon-points");
+addp.addEventListener('click', (e) => {addPolygon(pc.value)});
+
+// fix polygon number click and input
+pc.onclick = (e) => {e.stopPropagation};
+pc.onchange = (e) => {
+  if (e.target.value < 3) {
+    e.target.value = 3;
+  } else if (e.target.value > 10) {
+    e.target.value = 10;
+  }
+}
 
 // add zoom and movement support
 addZoom(canvas);

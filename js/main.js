@@ -15,12 +15,13 @@ export function initialize(gl_) {
   gl = gl_;
 
   // set default zoom and offset
-  offset = [0.0, 0.0];
+  offset = [20.0, 20.0];
   zoomLevel = 1.0;
 
   // insert initial empty data
   positionBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+  shapes = [];
 
   // load shaders
   var program = createProgramFromShader(gl, VERTEX_SHADER, FRAGMENT_SHADER);
@@ -115,11 +116,13 @@ export function saveXml(){
 export function addZoom(canvasElement) {
   canvasElement.addEventListener("wheel", (e) => {
     let shift = e.deltaY * -0.001;
-    let oldZoomLevel = zoomLevel;
-    zoomLevel += shift;
-    offset[0] += (e.offsetX - (e.offsetX / oldZoomLevel * zoomLevel)) / zoomLevel;
-    offset[1] += (e.offsetY - (e.offsetY / oldZoomLevel * zoomLevel)) / zoomLevel;
-    render();
+    if (zoomLevel + shift >= 0.5 && zoomLevel + shift <= 2.0) {
+      let oldZoomLevel = zoomLevel;
+      zoomLevel += shift;
+      offset[0] += (e.offsetX - (e.offsetX / oldZoomLevel * zoomLevel)) / zoomLevel;
+      offset[1] += (e.offsetY - (e.offsetY / oldZoomLevel * zoomLevel)) / zoomLevel;
+      render();
+    }
   });
 }
 
@@ -153,4 +156,15 @@ export function addMovement(canvasElement) {
     lastX = null;
     lastY = null;
   });
+}
+
+// functions to receive add shape requests
+export function addLine() {
+
+}
+export function addSquare() {
+  
+}
+export function addPolygon(point) {
+  console.log("making a " + point + " point polygon.")
 }

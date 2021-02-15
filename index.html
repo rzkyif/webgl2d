@@ -5,9 +5,22 @@
 </head>
 <body>
   <div id="header">
-    <input id="f" type="file"/>
-    <a type="button" id='save' download="saved_file.xml" href="">Save</a>
+    <label class="button" for="f">Load</label>
+    <a class="button" type="button" id='s' download="saved_file.xml" href="">Save</a>
+    <a class="button right" type="button" id='help'>?</a>
   </div>
-  <canvas id="c"></canvas>
+  <div id="canvas-slot">
+    <canvas id="c"></canvas>
+  </div>
+  <div id="footer">
+    <a class="button" type="button" id='add-line'>Add Line</a>
+    <a class="button" type="button" id='add-square'>Add Square</a>
+    <div id="polygon-adder">
+      <input id="polygon-points" type="number" value="3" min="3" max="10"/>
+      <label for="polygon-points" id="polygon-points-info">point</label>
+      <a class="button" type="button" id='add-polygon'>Add Polygon</a>
+    </div>
+  </div>
+  <input id="f" type="file"/>
   <script type="module" src="./index.js"></script>
 </body>

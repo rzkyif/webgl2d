@@ -1,10 +1,99 @@
-body {
+html, body {
   display: flex;
   flex-direction: column;
+  background-color: rgb(208, 221, 236);
+  height: 100%;
+}
+
+#outer {
+  min-height: 100%;
+}
+
+#header {
+  display: flex;
+  flex-direction: row;
+}
+
+#footer {
+  display: flex;
+  flex-direction: row;
+  margin-top: 5px;
+}
+
+.button {
+  font-family: 'Courier New', Courier, monospace;
+  margin-right: 5px;
+  padding: 2px 7px;
+  line-height: 18px;
+  font-size: 14px;
+  background-color: lightgray;
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+  border: gray solid 1px;
+}
+
+.button:active {
+  background-color: darkgray;
+}
+
+.button.right {
+  margin-left: auto;
+  margin-right: 0px;
+  text-align: center;
+}
+
+#canvas-slot {
+  display: flex;
+  background-color: black;
+  border: gray solid 1px;
+  margin-top: 5px;
+  flex: 1;
+}
+
+#polygon-adder {
+  display: flex;
+}
+
+#polygon-points {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  text-align: center;
+  line-height: 18px;
+  border: 1px solid gray;
+  border-right: 0px;
+  outline: 0px;
+  width: 20px;
+}
+
+#polygon-points-info {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  text-align: center;
+  line-height: 25px;
+  background-color: white;
+  border: 1px solid gray;
+  border-left: 0px;
+  border-right: 0px;
+  outline: 0px;
+  padding: 0px 7px 0px 0px;
 }
 
 #c {
   display: flex;
-  margin-top: 10px;
   flex: 1;
+}
+
+#f {
+  display: none;
+}
+
+#save {
+  display: none;
+}
+
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
 }
