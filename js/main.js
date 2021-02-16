@@ -216,7 +216,7 @@ export function drawPolygon(canvas) {
         pointCount--;
         if (pointCount > 0) {
           let realMouseX = (e.offsetX / zoomLevel) - offset[0];
-          let realMouseY = (e.offsetY / zoomLevel) - offset[0];
+          let realMouseY = (e.offsetY / zoomLevel) - offset[1];
           currentPoint = new Point(realMouseX, realMouseY);
           currentShape.points.push(currentPoint);
         } else {
@@ -237,7 +237,7 @@ export function drawPolygon(canvas) {
   canvas.addEventListener('mousemove', (e) => {
     if (isDrawing == 'polygon') {
       let realMouseX = (e.offsetX / zoomLevel) - offset[0];
-      let realMouseY = (e.offsetY / zoomLevel) - offset[0];
+      let realMouseY = (e.offsetY / zoomLevel) - offset[1];
       currentPoint.x = realMouseX;
       currentPoint.y = realMouseY;
       render();
