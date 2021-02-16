@@ -4,7 +4,7 @@
 
 export const POINT_SIZE = 10;
 export const POINT_COLOR = "#FFFFFF";
-export const DEFAULT_COLOR = "#000000";
+export const DEFAULT_COLOR = "#555555";
 
 // function to compile shader
 export function createShader(gl, type, source) {
@@ -61,7 +61,7 @@ export function hexToRGB(hex){
         c = [c[0], c[0], c[1], c[1], c[2], c[2]];
     }
     c = '0x' + c.join('');
-    return [(c>>16)&255, (c>>8)&255, c&255];
+    return [((c>>16)&255)/255, ((c>>8)&255)/255, (c&255)/255];
   }
   throw new Error('Invalid hex code!');
 }

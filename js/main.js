@@ -3,12 +3,12 @@
 */
 
 import { VERTEX_SHADER, FRAGMENT_SHADER } from './shaders.js'
-import { Line, Square, Polygon } from './shapes.js'
-import { resizeCanvasToDisplaySize, createProgramFromShader, hexToRGB, isInside, POINT_SIZE, POINT_COLOR } from './utils.js'
+import { Line, Square, Polygon, Point } from './shapes.js'
+import { resizeCanvasToDisplaySize, createProgramFromShader, hexToRGB, isInside, POINT_SIZE, POINT_COLOR, DEFAULT_COLOR } from './utils.js'
 
 let gl, positionBuffer
 let positionAttributeLocation, resolutionUniformLocation, colorUniformLocation, offsetUniformLocation, scaleUniformLocation, pointUniformLocation, pointSizeUniformLocation
-let xmlDocument, shapes, offset, zoomLevel, isMoving, lastX, lastY
+let xmlDocument, shapes, offset, zoomLevel, isMoving, lastX, lastY, isDrawing, currentShape, currentPoint, pointCount, statusElement
 
 // function for initializing WebGL
 export function initialize(gl_) {
@@ -53,6 +53,22 @@ export function render() {
   gl.uniform1f(pointSizeUniformLocation, POINT_SIZE);
   let point_color = hexToRGB(POINT_COLOR);
 
+  // draw current shape
+  if (currentShape) {
+    let data = currentShape.toVectors();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
+    // draw shape
+    let rgb = hexToRGB(currentShape.color);
+    gl.uniform4f(colorUniformLocation, rgb[0], rgb[1], rgb[2], 1);
+    gl.uniform1f(pointUniformLocation, 0);
+    gl.drawArrays(currentShape.drawMode, 0, currentShape.drawCount);
+    // draw corner points
+    gl.uniform4f(colorUniformLocation, point_color[0], point_color[1], point_color[2], 1);
+    gl.uniform1f(pointUniformLocation, 1);
+    gl.drawArrays(gl.POINTS, 0, currentShape.drawCount);
+  }
+
   // draw each shapes
   for (let i = 0; i < shapes.length; i++) {
     let data = shapes[i].toVectors();
@@ -70,11 +86,24 @@ export function render() {
   }
 }
 
+// function to refresh offset and zoom to status element
+export function refreshStatus() {
+  statusElement.innerHTML = Math.round(offset[0]) + ', ' + Math.round(offset[1]) + ' | ' + Math.round(zoomLevel*100) + '%';
+}
+
+// function to reset offset and zoom
+export function resetOffsetAndZoom() {
+  offset = [20.0, 20.0];
+  zoomLevel = 1.0;
+}
+
 // function to load data from XML string
 export function loadXml(xmlText) {
   xmlDocument = (new DOMParser()).parseFromString(xmlText, "text/xml");
   shapes = []
   console.log("Loading from XML...");
+  resetOffsetAndZoom();
+  refreshStatus();
 
   let xmlLines = xmlDocument.getElementsByTagName("line");
   for (let i = 0; i < xmlLines.length; i++) {
@@ -109,28 +138,29 @@ export function saveXml(){
   var data = new Blob([(new XMLSerializer()).serializeToString(doc)], {type: 'text/xml'});
   var url = URL.createObjectURL(data);
 
-  document.getElementById('save').href = url;
+  document.getElementById('s').href = url;
 }
 
 // function to add zoom support
-export function addZoom(canvasElement) {
-  canvasElement.addEventListener("wheel", (e) => {
+export function addZoom(canvas) {
+  canvas.addEventListener("wheel", (e) => {
     let shift = e.deltaY * -0.001;
-    if (zoomLevel + shift >= 0.5 && zoomLevel + shift <= 2.0) {
+    if (zoomLevel + shift >= 0.5 && zoomLevel + shift <= 2.1) {
       let oldZoomLevel = zoomLevel;
       zoomLevel += shift;
       offset[0] += (e.offsetX - (e.offsetX / oldZoomLevel * zoomLevel)) / zoomLevel;
       offset[1] += (e.offsetY - (e.offsetY / oldZoomLevel * zoomLevel)) / zoomLevel;
       render();
+      refreshStatus();
     }
   });
 }
 
 // function to add movement support
-export function addMovement(canvasElement) {
+export function addMovement(canvas) {
   lastX = null;
   lastY = null;
-  canvasElement.addEventListener("mousedown", (e) => {
+  canvas.addEventListener("mousedown", (e) => {
     for (let i = 0; i < shapes.length; i++) {
       if (isInside(e.offsetX, e.offsetY, shapes[i], offset, zoomLevel)) {
         return;
@@ -138,7 +168,7 @@ export function addMovement(canvasElement) {
     }
     isMoving = true;
   });
-  canvasElement.addEventListener("mousemove", (e) => {
+  canvas.addEventListener("mousemove", (e) => {
     if (isMoving) {
       if (lastX === null) {
         lastX = e.offsetX;
@@ -148,23 +178,69 @@ export function addMovement(canvasElement) {
         lastX = e.offsetX;
         lastY = e.offsetY;
         render();
+        refreshStatus();
       }
     }
   });
-  canvasElement.addEventListener("mouseup", (e) => {
+  canvas.addEventListener("mouseup", (e) => {
     isMoving = false;
     lastX = null;
     lastY = null;
   });
 }
 
-// functions to receive add shape requests
-export function addLine() {
+// add status update functionality on status element
+export function addStatusUpdate(status) {
+  statusElement = status;
+}
+
+// functions to start adding shapes
+export function startAddLine() {
 
 }
-export function addSquare() {
+export function startAddSquare() {
   
 }
-export function addPolygon(point) {
-  console.log("making a " + point + " point polygon.")
+export function startAddPolygon(point) {
+  currentPoint = new Point(0, 0);
+  currentShape = new Polygon([currentPoint], DEFAULT_COLOR);
+  pointCount = point;
+  isDrawing = "polygon";
+}
+
+// function to add polygon drawing support
+export function drawPolygon(canvas) {
+  canvas.addEventListener('click', (e) => {
+    if (isDrawing == 'polygon') {
+      if (e.which == 1) {
+        pointCount--;
+        if (pointCount > 0) {
+          let realMouseX = (e.offsetX / zoomLevel) - offset[0];
+          let realMouseY = (e.offsetY / zoomLevel) - offset[0];
+          currentPoint = new Point(realMouseX, realMouseY);
+          currentShape.points.push(currentPoint);
+        } else {
+          shapes.push(currentShape);
+          currentShape = null;
+          currentPoint = null;
+          isDrawing = false;
+        }
+      } else if (e.which == 3) {
+        if (currentShape.points.length > 1) {
+          currentShape.points.pop();
+          currentPoint = currentShape.points[currentShape.points.length-1];
+          pointCount++;
+        }
+      }
+    }
+  });
+  canvas.addEventListener('mousemove', (e) => {
+    if (isDrawing == 'polygon') {
+      let realMouseX = (e.offsetX / zoomLevel) - offset[0];
+      let realMouseY = (e.offsetY / zoomLevel) - offset[0];
+      currentPoint.x = realMouseX;
+      currentPoint.y = realMouseY;
+      render();
+    }
+  });
 }

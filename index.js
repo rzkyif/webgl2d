@@ -10,13 +10,19 @@ if (!gl) {
   throw new Error("WebGL is not supported!");
 }
 
-import { initialize, loadXml, render, saveXml, addMovement, addZoom, addLine, addSquare, addPolygon } from "./js/main.js"
+import { initialize, loadXml, render, saveXml, addMovement, addZoom, addStatusUpdate, startAddLine, startAddSquare, startAddPolygon, drawPolygon, resetOffsetAndZoom, refreshStatus } from "./js/main.js"
 
 // initialize WebGL on canvas
 initialize(gl);
 
+// get help pad
+var helpPad = document.getElementById('help-pad');
+
 // connect file selector to load and render
 var fs = document.getElementById("f");
+fs.addEventListener('click', (e) => {
+  helpPad.classList.add('hidden');
+})
 fs.addEventListener('change', (event) => {
   fs.files[0].text().then((text) => {
     console.log(text);
@@ -29,19 +35,29 @@ fs.addEventListener('change', (event) => {
 var save = document.getElementById('s');
 save.addEventListener('click', (e) =>{
   // e.preventDefault();
+  helpPad.classList.add('hidden');
   saveXml();
 })
 
 // connect add shape buttons
 var addl = document.getElementById('add-line');
-addl.addEventListener('click', (e) => {addLine()});
+addl.addEventListener('click', (e) => {
+  helpPad.classList.add('hidden');
+  startAddLine()
+});
 var adds = document.getElementById('add-square');
-adds.addEventListener('click', (e) => {addSquare()});
+adds.addEventListener('click', (e) => {
+  helpPad.classList.add('hidden');
+  startAddSquare()
+});
 var addp = document.getElementById('add-polygon');
 var pc = document.getElementById("polygon-points");
-addp.addEventListener('click', (e) => {addPolygon(pc.value)});
+addp.addEventListener('click', (e) => {
+  helpPad.classList.add('hidden');
+  startAddPolygon(pc.value)
+});
 
-// fix polygon number click and input
+// fix polygon point count click and input
 pc.onclick = (e) => {e.stopPropagation};
 pc.onchange = (e) => {
   if (e.target.value < 3) {
@@ -54,3 +70,26 @@ pc.onchange = (e) => {
 // add zoom and movement support
 addZoom(canvas);
 addMovement(canvas);
+var status = document.getElementById('status');
+addStatusUpdate(status);
+status.addEventListener('click', (e) => {
+  resetOffsetAndZoom();
+  refreshStatus();
+  render();
+});
+
+// add polygon drawing support
+drawPolygon(canvas);
+
+// add help menu toggling
+var helpButton = document.getElementById('help');
+helpButton.addEventListener('click', (e) => {
+  helpPad.classList.toggle('hidden');
+});
+var closeButton = document.getElementById('close');
+closeButton.addEventListener('click', (e) => {
+  helpPad.classList.add('hidden');
+});
+canvas.addEventListener('click', (e) => {
+  helpPad.classList.add('hidden');
+});

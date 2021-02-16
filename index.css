@@ -1,7 +1,6 @@
 html, body {
   display: flex;
   flex-direction: column;
-  background-color: rgb(208, 221, 236);
   height: 100%;
 }
 
@@ -22,6 +21,7 @@ html, body {
 
 .button {
   font-family: 'Courier New', Courier, monospace;
+  user-select: none;
   margin-right: 5px;
   padding: 2px 7px;
   line-height: 18px;
@@ -33,17 +33,22 @@ html, body {
   border: gray solid 1px;
 }
 
-.button:active {
+a.button:active {
   background-color: darkgray;
 }
 
-.button.right {
+a.button:hover, label.button:hover {
+  border-color: red;
+}
+
+.right {
   margin-left: auto;
   margin-right: 0px;
   text-align: center;
 }
 
 #canvas-slot {
+  position: relative;
   display: flex;
   background-color: black;
   border: gray solid 1px;
@@ -90,6 +95,55 @@ html, body {
 
 #save {
   display: none;
+}
+
+#help-pad {
+  flex-direction: column;
+  background-color: white;
+  font-family: 'Courier New', Courier, monospace;
+  border-radius: 10px;
+  padding: 10px 25px;
+  position: absolute;
+  width: 350px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#close {
+  position: absolute;
+  background-color: lightpink;
+  top: 30px;
+  right: 20px;
+}
+
+#close:active {
+  background-color: lightcoral;
+}
+
+.hidden {
+  display: none;
+}
+
+i {
+  font-style: normal;
+}
+
+p {
+  text-align: justify;
+  line-height: 25px;
+}
+
+#status {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  line-height: 25px;
+  user-select: none;
+  cursor: pointer;
+}
+
+#status:hover {
+  color: red;
 }
 
 input[type=number]::-webkit-inner-spin-button, 
