@@ -1,28 +1,13 @@
-html {
-  height: 100%;
-}
-
-body {
-  display: flex;
-  flex-direction: column;
+html, body, #outer {
   height: 100%;
   margin: 0px;
 }
 
-#outer {
-  min-height: 100%;
-}
-
-#header {
+#container {
   display: flex;
-  flex-direction: row;
-  margin: 13px 8px 0px 8px;
-}
-
-#footer {
-  display: flex;
-  flex-direction: row;
-  margin: 5px 8px 13px 8px;
+  flex-direction: column;
+  height: 100%;
+  margin: 0px;
 }
 
 .button {
@@ -53,13 +38,26 @@ a.button:hover, label.button:hover {
   text-align: center;
 }
 
+#header {
+  display: flex;
+  flex-direction: row;
+  margin: 13px 8px 0px 8px;
+}
+
 #canvas-slot {
   position: relative;
   display: flex;
   flex-grow: 1;
+  min-height: 0px;
   background-color: black;
   border: gray solid 1px;
   margin: 5px 8px 0px 8px;
+}
+
+#footer {
+  display: flex;
+  flex-direction: row;
+  margin: 5px 8px 13px 8px;
 }
 
 #polygon-adder {

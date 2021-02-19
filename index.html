@@ -4,32 +4,35 @@
   <link rel="stylesheet" href="./index.css">
 </head>
 <body>
-  <div id="header">
-    <label class="button" for="f">Load</label>
-    <a class="button" type="button" id='s' download="saved_file.xml" href="">Save</a>
-    <a class="button right" type="button" id='help'>?</a>
-  </div>
-  <div id="canvas-slot">
-    <div id="help-pad">
-      <h2>How to Use</h1>
-      <p>At the top left corner you can tap <i class="button">Load</i> and <i class="button">Save</i> to load and save your shapes.</p>
-      <p>At the top right corner you can tap <i class="button">?</i> to show this information page.</p>
-      <p>At the bottom left corner you can tap <i class="button">Add Line</i>, <i class="button">Add Square</i>, and <i class="button">Add Polygon</i> to start adding shapes.</p>
-      <p>At the bottom right corner you can see and reset the current view offset and zoom level by tapping.</p>
-      <a id="close" class="button" type="button">x</a>
+  <div id="container">
+    <div id="header">
+      <label class="button" for="f">Load</label>
+      <a class="button" type="button" id='s' download="saved_file.xml" href="">Save</a>
+      <a class="button right" type="button" id='help'>?</a>
     </div>
-    <canvas id="c"></canvas>
-  </div>
-  <div id="footer">
-    <a class="button" type="button" id='add-line'>Add Line</a>
-    <a class="button" type="button" id='add-square'>Add Square</a>
-    <div id="polygon-adder">
-      <input id="polygon-points" type="number" value="3" min="3" max="10"/>
-      <label for="polygon-points" id="polygon-points-info">point</label>
-      <a class="button" type="button" id='add-polygon'>Add Polygon</a>
+    <div id="canvas-slot">
+      <div id="help-pad">
+        <h2>How to Use</h1>
+        <p>At the top left corner you can tap <i class="button">Load</i> and <i class="button">Save</i> to load and save your shapes.</p>
+        <p>At the top right corner you can tap <i class="button">?</i> to show this information page.</p>
+        <p>At the bottom left corner you can tap <i class="button">Add Line</i>, <i class="button">Add Square</i>, and <i class="button">Add Polygon</i> to start adding shapes.</p>
+        <p>At the bottom right corner you can see and reset the current view offset and zoom level by tapping.</p>
+        <a id="close" class="button" type="button">x</a>
+      </div>
+      <canvas id="c"></canvas>
     </div>
-    <span id="status" class="right">20, 20 | 100%</span>
+    <div id="footer">
+      <a class="button" type="button" id='add-line'>Add Line</a>
+      <a class="button" type="button" id='add-square'>Add Square</a>
+      <div id="polygon-adder">
+        <input id="polygon-points" type="number" value="3" min="3" max="10"/>
+        <label for="polygon-points" id="polygon-points-info">point</label>
+        <a class="button" type="button" id='add-polygon'>Add Polygon</a>
+      </div>
+      <span id="status" class="right">20, 20 | 100%</span>
+    </div>
   </div>
+  
   <input id="f" type="file"/>
   <script type="module" src="./index.js"></script>
 </body>
