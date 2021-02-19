@@ -8,7 +8,7 @@ import { resizeCanvasToDisplaySize, createProgramFromShader, hexToRGB, isInside,
 
 let gl, positionBuffer
 let positionAttributeLocation, resolutionUniformLocation, colorUniformLocation, offsetUniformLocation, scaleUniformLocation, pointUniformLocation, pointSizeUniformLocation
-let xmlDocument, shapes, offset, zoomLevel, isMoving, lastX, lastY, isDrawing, currentShape, currentPoint, pointCount, statusElement
+let xmlDocument, shapes, selectedShape, offset, zoomLevel, isMoving, lastX, lastY, isDrawing, currentShape, currentPoint, pointCount, statusElement
 
 // function for initializing WebGL
 export function initialize(gl_) {
@@ -212,6 +212,7 @@ export function startAddPolygon(point) {
 export function drawPolygon(canvas) {
   canvas.addEventListener('click', (e) => {
     if (isDrawing == 'polygon') {
+      console.log(e.which);
       if (e.which == 1) {
         pointCount--;
         if (pointCount > 0) {
@@ -237,4 +238,63 @@ export function drawPolygon(canvas) {
       render();
     }
   });
+}
+
+export function clickShape(e){
+  let realMouseX = (e.offsetX / zoomLevel) - offset[0];
+  let realMouseY = (e.offsetY / zoomLevel) - offset[1];
+  selectedShape = isInShapes(realMouseX, realMouseY);
+  console.log(selectedShape)
+  if(selectedShape){
+    return true
+  }
+  return false
+}
+
+export function changeColor(color){
+  selectedShape.color = color;
+  render();
+}
+
+function isInShapes(x, y){
+  for(let i = 0; i < shapes.length; i++){
+    if(shapes[i] instanceof Line){
+      // let m = (shapes[i].ay - shapes[i].by)/(shapes[i].ax - shapes[i].bx);
+      // let n = (y - shapes[i].by)/(x - shapes[i].bx);
+      // console.log(m);
+      // console.log(n);
+      // if(m === n ){
+      //   return shapes[i];
+      // }
+      let a = Math.pow( Math.pow(shapes[i].ax - x,2) + Math.pow(shapes[i].ay - y,2),0.5);
+      let b = Math.pow( Math.pow(shapes[i].bx - x,2) + Math.pow(shapes[i].by - y,2),0.5);
+      let c = Math.pow( Math.pow(shapes[i].ax - shapes[i].bx,2) + Math.pow(shapes[i].ay - shapes[i].by,2),0.5);
+
+      let distance;
+
+      if(Math.pow(b,2) > Math.pow(a,2) + Math.pow(c,2)){
+        distance = a;
+      }
+      else if(Math.pow(a,2) > Math.pow(b,2) + Math.pow(c,2)){
+        distance = b;
+      }
+      else{
+        let s = (a+b+c)/2;
+        distance = (2/c) * Math.pow(s*(s-a)*(s-b)*(s-c) ,0.5);
+      }
+      console.log(distance);
+      if(distance < 5){
+        return shapes[i];
+      }
+    }
+    else if(shapes[i] instanceof Square){
+      if ((x >= shapes[i].x) && (y >= shapes[i].y) && (x <= (shapes[i].x + shapes[i].size)) && (y <= (shapes[i].y + shapes[i].size))){
+        return shapes[i];
+      }
+    }
+    else if(shapes[i] instanceof Polygon){
+      return null;
+    }
+  }
+  return null;
 }
