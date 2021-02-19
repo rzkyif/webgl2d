@@ -226,12 +226,6 @@ export function drawPolygon(canvas) {
           currentPoint = null;
           isDrawing = false;
         }
-      } else if (e.which == 3) {
-        if (currentShape.points.length > 1) {
-          currentShape.points.pop();
-          currentPoint = currentShape.points[currentShape.points.length-1];
-          pointCount++;
-        }
       }
     }
   });
