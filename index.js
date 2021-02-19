@@ -10,7 +10,7 @@ if (!gl) {
   throw new Error("WebGL is not supported!");
 }
 
-import { initialize, loadXml, render, saveXml, addMovement, addZoom, addStatusUpdate, startAddLine, startAddSquare, startAddPolygon, drawPolygon, resetOffsetAndZoom, refreshStatus } from "./js/main.js"
+import { initialize, loadXml, render, saveXml, addMovement, addZoom, addStatusUpdate, startAddLine, startAddSquare, startAddPolygon, drawPolygon, resetOffsetAndZoom, refreshStatus, clickShape, changeColor } from "./js/main.js"
 
 // initialize WebGL on canvas
 initialize(gl);
@@ -90,6 +90,21 @@ var closeButton = document.getElementById('close');
 closeButton.addEventListener('click', (e) => {
   helpPad.classList.add('hidden');
 });
+var colorInput = document.getElementById('color')
 canvas.addEventListener('click', (e) => {
   helpPad.classList.add('hidden');
+  // colorInput.toggleAttribute('disabled');
+  if(clickShape(e)){
+    console.log('shape clicked')
+    colorInput.removeAttribute('disabled');
+  }
+  else{
+    console.log('canvas clicked')
+    colorInput.setAttribute('disabled', 'true');
+  }
+});
+
+colorInput.addEventListener('change', (e) =>{
+  console.log(e.target.value);
+  changeColor(e.target.value);
 });
