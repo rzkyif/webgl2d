@@ -1,7 +1,12 @@
-html, body {
+html {
+  height: 100%;
+}
+
+body {
   display: flex;
   flex-direction: column;
   height: 100%;
+  margin: 0px;
 }
 
 #outer {
@@ -11,12 +16,13 @@ html, body {
 #header {
   display: flex;
   flex-direction: row;
+  margin: 13px 8px 0px 8px;
 }
 
 #footer {
   display: flex;
   flex-direction: row;
-  margin-top: 5px;
+  margin: 5px 8px 13px 8px;
 }
 
 .button {
@@ -50,10 +56,10 @@ a.button:hover, label.button:hover {
 #canvas-slot {
   position: relative;
   display: flex;
+  flex-grow: 1;
   background-color: black;
   border: gray solid 1px;
-  margin-top: 5px;
-  flex: 1;
+  margin: 5px 8px 0px 8px;
 }
 
 #polygon-adder {
