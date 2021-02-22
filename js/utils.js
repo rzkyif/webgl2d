@@ -133,9 +133,9 @@ export function isInsidePoint(x_, y_, shape, offset, zoomLevel) {
           } else if (i == 1 && j == 0) {
             return 1;
           } else if (i == 0 && j == 1) {
-            return 2;
-          } else {
             return 3;
+          } else {
+            return 2;
           }
         }
       }

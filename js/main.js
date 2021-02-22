@@ -208,7 +208,7 @@ export function drawLine(canvas){
     if (isDrawing == "line"){
     
       console.log('draw line');
-      if (e.which == 1) {
+      if (e.which == 1) {     
         pointCount--;
         if (pointCount > 0) {
           console.log(currentShape);
@@ -222,8 +222,8 @@ export function drawLine(canvas){
           shapes.push(currentShape);
           lineBX = null;
           lineBY = null;
-          isDrawing = false;
-        }
+        isDrawing = false;
+          }
       }
     }
   });
@@ -243,6 +243,7 @@ export function startAddSquare() {
   isDrawing = 'square';
 }
 
+// function to add square drawing support
 export function drawSquare(canvas){
   canvas.addEventListener('click', (e) =>{
     if(isDrawing === 'square'){
@@ -414,4 +415,63 @@ function isInShapes(e){
     }
   }
   return null;
+}
+
+//function tu add square sizing support;
+export function sizingSquare(canvas){
+  if(!isDrawing){
+    selectedShape = null;
+  
+    canvas.addEventListener('mousedown', (e) =>{
+      let sizing = checkSizing(e);
+      if(sizing[0]?.constructor.name === 'Square'){
+        selectedShape = sizing[0];
+        if(sizing[1] === 0){
+          anchorX = selectedShape.x + selectedShape.size;
+          anchorY = selectedShape.y + selectedShape.size;
+        }
+        else if(sizing[1] === 1){
+          anchorX = selectedShape.x;
+          anchorY = selectedShape.y + selectedShape.size;
+        }
+        else if(sizing[1] === 2){
+          anchorX = selectedShape.x;
+          anchorY = selectedShape.y;
+        }
+        else{
+          anchorX = selectedShape.x + selectedShape.size;
+          anchorY = selectedShape.y;
+        }
+        isResizing = 'square';
+      }
+    })
+    canvas.addEventListener('mousemove', (e) =>{
+      if(isResizing === 'square'){
+        let realMouseX = (e.offsetX / zoomLevel) - offset[0];
+        let realMouseY = (e.offsetY / zoomLevel) - offset[1];
+        let newAtt = resizeSquare(selectedShape, realMouseX, realMouseY, anchorX, anchorY);
+        selectedShape.x = newAtt[0];
+        selectedShape.y = newAtt[1];
+        selectedShape.size = newAtt[2];
+        render();
+      }
+    })
+    canvas.addEventListener('mouseup', (e) =>{
+      if (isResizing == "square") {
+        isResizing = null;
+        selectedShape = null;
+        anchorX = null;
+        anchorY = null;
+      }
+    })
+  }
+}
+
+function checkSizing(e){
+  for(let i = 0; i < shapes.length; i++){
+    if (isInsidePoint(e.offsetX, e.offsetY, shapes[i], offset, zoomLevel) >= 0){
+      return [shapes[i], isInsidePoint(e.offsetX, e.offsetY, shapes[i], offset, zoomLevel)];
+    }
+  }
+  return [null, -1];
 }
