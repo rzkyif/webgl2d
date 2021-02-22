@@ -113,6 +113,6 @@ canvas.addEventListener('click', (e) => {
   colorInput.value=status[1];
 });
 
-colorInput.addEventListener('change', (e) =>{
+colorInput.addEventListener('input', (e) =>{
   changeColor(e.target.value);
 });
