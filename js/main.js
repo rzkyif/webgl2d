@@ -259,6 +259,7 @@ export function drawSquare(canvas){
           anchorX = null;
           anchorY = null;
           isDrawing = false;
+          currentShape = null;
         }
       }
     }
