@@ -25,7 +25,6 @@ fs.addEventListener('click', (e) => {
 })
 fs.addEventListener('change', (event) => {
   fs.files[0].text().then((text) => {
-    console.log(text);
     loadXml(text);
     render();
   })
@@ -106,11 +105,9 @@ canvas.addEventListener('click', (e) => {
   helpPad.classList.add('hidden');
   let status = clickShape(e);
   if(status[0]){
-    console.log('shape clicked')
     colorInput.removeAttribute('disabled');
   }
   else{
-    console.log('canvas clicked')
     colorInput.setAttribute('disabled', 'true');
   }
   colorInput.value=status[1];

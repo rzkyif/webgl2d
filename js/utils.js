@@ -112,7 +112,6 @@ export function isInside(x_, y_, shape, offset, zoomLevel) {
       let s = (a+b+c)/2;
       dist = (2/c) * Math.pow(s*(s-a)*(s-b)*(s-c) ,0.5);
     }
-    console.log(dist);
     if(dist < POINT_SIZE/2){
       return true;
     }
