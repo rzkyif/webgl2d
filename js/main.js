@@ -9,7 +9,7 @@ import { resizeCanvasToDisplaySize, createProgramFromShader, hexToRGB, isInside,
 let gl, positionBuffer
 let positionAttributeLocation, resolutionUniformLocation, colorUniformLocation, offsetUniformLocation, scaleUniformLocation, pointUniformLocation, pointSizeUniformLocation
 let xmlDocument, shapes, selectedShape, offset, zoomLevel, isMoving, lastX, lastY, isDrawing, currentShape, currentPoint, pointCount, statusElement, anchorX, anchorY, lineBX, lineBY
-let polygonCurrentIndex, polygonCurrentPointIndex, isResizing
+let polygonCurrentIndex, polygonCurrentPointIndex, isResizing, lineCurrentIndex, lineCurrentPointIndex
 
 // function for initializing WebGL
 export function initialize(gl_) {
@@ -320,6 +320,42 @@ export function drawPolygon(canvas) {
       currentPoint.x = realMouseX;
       currentPoint.y = realMouseY;
       render();
+    }
+  });
+}
+
+export function resizeLine(canvas){
+  lineCurrentPointIndex = null;
+  lineCurrentPointIndex = null;
+  canvas.addEventListener("mousedown", (e) => {
+    if (!isDrawing) {
+      for (let i = 0; i < shapes.length; i++) {
+        if (shapes[i].constructor.name != "Line") {
+          continue;
+        }
+        lineCurrentPointIndex = isInsidePoint(e.offsetX, e.offsetY, shapes[i], offset, zoomLevel);
+        if (lineCurrentPointIndex == 0 || lineCurrentPointIndex == 1) {
+          lineCurrentIndex = i;
+          isResizing = "line";
+        }
+      }
+    }
+  });
+  canvas.addEventListener("mousemove", (e) => {
+    if (isResizing == "line") {
+      let realMouseX = (e.offsetX / zoomLevel) - offset[0];
+      let realMouseY = (e.offsetY / zoomLevel) - offset[1];
+      if (lineCurrentPointIndex == 0) {
+        shapes[lineCurrentIndex].setA(realMouseX,realMouseY);
+      } else if (lineCurrentPointIndex == 1) {
+        shapes[lineCurrentIndex].setB(realMouseX,realMouseY);
+      }
+      render();
+    }
+  });
+  canvas.addEventListener("mouseup", (e) => {
+    if (isResizing == "line") {
+      isResizing = null;
     }
   });
 }
