@@ -10,7 +10,7 @@ if (!gl) {
   throw new Error("WebGL is not supported!");
 }
 
-import { initialize, loadXml, render, saveXml, addMovement, addZoom, addStatusUpdate, startAddLine, drawLine, startAddSquare, startAddPolygon, drawPolygon, resetOffsetAndZoom, refreshStatus, clickShape, changeColor, drawSquare, resizePolygon } from "./js/main.js"
+import { initialize, loadXml, render, saveXml, addMovement, addZoom, addStatusUpdate, startAddLine, drawLine, startAddSquare, startAddPolygon, drawPolygon, resetOffsetAndZoom, refreshStatus, clickShape, changeColor, drawSquare, resizeLine, resizePolygon } from "./js/main.js"
 
 // initialize WebGL on canvas
 initialize(gl);
@@ -81,6 +81,7 @@ status.addEventListener('click', (e) => {
 
 // add line drawing support
 drawLine(canvas);
+resizeLine(canvas);
 
 // add line drawing support
 drawSquare(canvas);
