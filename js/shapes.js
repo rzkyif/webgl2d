@@ -20,6 +20,33 @@ export class Line {
     }
   }
 
+  getAX(){
+    return this.ax;
+  }
+
+  getAY() {
+    return this.ay;
+  }
+
+  getBX(){
+    return this.bx;
+  }
+
+  getBY(){
+    return this.by;
+  }
+
+  setA(x,y){
+    this.ax = x;
+    this.ay = y;
+  }
+
+  setB(x,y){
+    this.bx = x;
+    this.by = y;
+  }
+
+
   toVectors() {
     return [this.ax, this.ay, this.bx, this.by];
   }
