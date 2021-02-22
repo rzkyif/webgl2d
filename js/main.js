@@ -200,18 +200,15 @@ export function startAddLine() {
   currentShape = new Line(DEFAULT_COLOR);
   pointCount = 2;
   isDrawing = "line";
-  console.log("start draw line");
 }
 
 export function drawLine(canvas){
   canvas.addEventListener('click', (e) => {
     if (isDrawing == "line"){
     
-      console.log('draw line');
       if (e.which == 1) {     
         pointCount--;
         if (pointCount > 0) {
-          console.log(currentShape);
           let realMouseX = (e.offsetX / zoomLevel) - offset[0];
           let realMouseY = (e.offsetY / zoomLevel) - offset[1];
           lineBX = realMouseX;
