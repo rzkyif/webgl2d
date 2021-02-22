@@ -95,9 +95,29 @@ export function isInside(x_, y_, shape, offset, zoomLevel) {
       }
     }
     return true;
-  } else {
-    return false;
+  } else if(shape.constructor.name == "Line"){
+    let a = Math.pow( Math.pow(shape.ax - x,2) + Math.pow(shape.ay - y,2),0.5);
+    let b = Math.pow( Math.pow(shape.bx - x,2) + Math.pow(shape.by - y,2),0.5);
+    let c = Math.pow( Math.pow(shape.ax - shape.bx,2) + Math.pow(shape.ay - shape.by,2),0.5);
+
+    let dist;
+
+    if(Math.pow(b,2) > Math.pow(a,2) + Math.pow(c,2)){
+      dist = a;
+    }
+    else if(Math.pow(a,2) > Math.pow(b,2) + Math.pow(c,2)){
+      dist = b;
+    }
+    else{
+      let s = (a+b+c)/2;
+      dist = (2/c) * Math.pow(s*(s-a)*(s-b)*(s-c) ,0.5);
+    }
+    console.log(dist);
+    if(dist < POINT_SIZE/2){
+      return true;
+    }
   }
+  return false;
 }
 
 // function returning true if a shape's point is selected
