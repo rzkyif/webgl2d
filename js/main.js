@@ -4,11 +4,12 @@
 
 import { VERTEX_SHADER, FRAGMENT_SHADER } from './shaders.js'
 import { Line, Square, Polygon, Point } from './shapes.js'
-import { resizeCanvasToDisplaySize, createProgramFromShader, hexToRGB, isInside, POINT_SIZE, POINT_COLOR, DEFAULT_COLOR, resizeSquare } from './utils.js'
+import { resizeCanvasToDisplaySize, createProgramFromShader, hexToRGB, isInside, POINT_SIZE, POINT_COLOR, DEFAULT_COLOR, resizeSquare, isInsidePoint } from './utils.js'
 
 let gl, positionBuffer
 let positionAttributeLocation, resolutionUniformLocation, colorUniformLocation, offsetUniformLocation, scaleUniformLocation, pointUniformLocation, pointSizeUniformLocation
 let xmlDocument, shapes, selectedShape, offset, zoomLevel, isMoving, lastX, lastY, isDrawing, currentShape, currentPoint, pointCount, statusElement, anchorX, anchorY
+let polygonCurrentIndex, polygonCurrentPointIndex, isResizing
 
 // function for initializing WebGL
 export function initialize(gl_) {
@@ -326,6 +327,40 @@ export function drawPolygon(canvas) {
       currentPoint.x = realMouseX;
       currentPoint.y = realMouseY;
       render();
+    }
+  });
+}
+
+// function to add polygon resize support
+export function resizePolygon(canvas) {
+  polygonCurrentIndex = null;
+  polygonCurrentPointIndex = null;
+  canvas.addEventListener("mousedown", (e) => {
+    if (!isDrawing) {
+      for (let i = 0; i < shapes.length; i++) {
+        if (shapes[i].constructor.name != "Polygon") {
+          continue;
+        }
+        polygonCurrentPointIndex = isInsidePoint(e.offsetX, e.offsetY, shapes[i], offset, zoomLevel);
+        if (polygonCurrentPointIndex >= 0) {
+          polygonCurrentIndex = i;
+          isResizing = "polygon";
+        }
+      }
+    }
+  });
+  canvas.addEventListener("mousemove", (e) => {
+    if (isResizing == "polygon") {
+      let realMouseX = (e.offsetX / zoomLevel) - offset[0];
+      let realMouseY = (e.offsetY / zoomLevel) - offset[1];
+      shapes[polygonCurrentIndex].points[polygonCurrentPointIndex].x = realMouseX;
+      shapes[polygonCurrentIndex].points[polygonCurrentPointIndex].y = realMouseY;
+      render()
+    }
+  });
+  canvas.addEventListener("mouseup", (e) => {
+    if (isResizing == "polygon") {
+      isResizing = null;
     }
   });
 }
