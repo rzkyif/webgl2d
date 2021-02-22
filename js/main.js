@@ -8,7 +8,7 @@ import { resizeCanvasToDisplaySize, createProgramFromShader, hexToRGB, isInside,
 
 let gl, positionBuffer
 let positionAttributeLocation, resolutionUniformLocation, colorUniformLocation, offsetUniformLocation, scaleUniformLocation, pointUniformLocation, pointSizeUniformLocation
-let xmlDocument, shapes, selectedShape, offset, zoomLevel, isMoving, lastX, lastY, isDrawing, currentShape, currentPoint, pointCount, statusElement, anchorX, anchorY
+let xmlDocument, shapes, selectedShape, offset, zoomLevel, isMoving, lastX, lastY, isDrawing, currentShape, currentPoint, pointCount, statusElement, anchorX, anchorY, lineBX, lineBY
 let polygonCurrentIndex, polygonCurrentPointIndex, isResizing
 
 // function for initializing WebGL
@@ -197,40 +197,33 @@ export function addStatusUpdate(status) {
 
 // functions to start adding shapes
 export function startAddLine() {
-  currentPoint = new Point(0,0);
+  currentShape = new Line(DEFAULT_COLOR);
+  pointCount = 2;
   isDrawing = "line";
   console.log("start draw line");
-
 }
 
 export function drawLine(canvas){
   canvas.addEventListener('click', (e) => {
-  let realMouseX1;
-  let realMouseY1;
-  let realMouseX2;
-  let realMouseY2;
-    if (isDrawing == 'line') {
-      console.log(e.which);
+    if (isDrawing == "line"){
+    
+      console.log('draw line');
       if (e.which == 1) {
-        var vector=[];
-        isDrawing = false;
-        realMouseX1 = (e.offsetX / zoomLevel) - offset[0];
-        realMouseY1 = (e.offsetY / zoomLevel) - offset[1];
-        console.log("draw point1");
-        vector.push(realMouseX1);
-        vector.push(realMouseY1);
-        canvas.addEventListener('click', (e) => {
-          if (e.which == 1) {
-            realMouseX2 = (e.offsetX / zoomLevel) - offset[0];
-            realMouseY2 = (e.offsetY / zoomLevel) - offset[1];
-            console.log("draw point2");
-            vector.push(realMouseX2);
-            vector.push(realMouseY2);
-            console.log(vector);
-            shapes.push(new Line(vector[0],vector[1],vector[2],vector[3], DEFAULT_COLOR))
-            render();
-          }
-        });
+        pointCount--;
+        if (pointCount > 0) {
+          console.log(currentShape);
+          let realMouseX = (e.offsetX / zoomLevel) - offset[0];
+          let realMouseY = (e.offsetY / zoomLevel) - offset[1];
+          lineBX = realMouseX;
+          lineBY = realMouseY;
+          currentShape.ax = lineBX;
+          currentShape.ay = lineBY;
+        } else {
+          shapes.push(currentShape);
+          lineBX = null;
+          lineBY = null;
+          isDrawing = false;
+        }
       }
     }
   });
@@ -238,8 +231,8 @@ export function drawLine(canvas){
     if (isDrawing == 'line') {
       let realMouseX = (e.offsetX / zoomLevel) - offset[0];
       let realMouseY = (e.offsetY / zoomLevel) - offset[1];
-      currentPoint.x = realMouseX;
-      currentPoint.y = realMouseY;
+      currentShape.setB(realMouseX, realMouseY);
+      render();
     }
   });
 }
