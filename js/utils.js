@@ -68,7 +68,7 @@ export function hexToRGB(hex){
 
 // function to check if coordinate is in a shape
 export function isInside(x_, y_, shape, offset, zoomLevel) {
-  if (isInsidePoint(x_, y_, shape, offset, zoomLevel)) {
+  if (isInsidePoint(x_, y_, shape, offset, zoomLevel) >= 0) {
     return true;
   }
   let x = (x_ / zoomLevel) - offset[0];
@@ -128,28 +128,36 @@ export function isInsidePoint(x_, y_, shape, offset, zoomLevel) {
     for (let i = 0; i < 2; i++) {
       for (let j = 0; j < 2; j++) {
         if (distance(x, y, shape.x+shape.size*i, shape.y+shape.size*j) <= POINT_SIZE/2) {
-          return true;
+          if (i == 0 && j == 0) {
+            return 0;
+          } else if (i == 1 && j == 0) {
+            return 1;
+          } else if (i == 0 && j == 1) {
+            return 2;
+          } else {
+            return 3;
+          }
         }
       }
     }
-    return false;
+    return -1;
   } else if (shape.constructor.name == "Polygon") {
     for (let i = 0; i < shape.points.length; i++) {
       if (distance(x, y, shape.points[i].x, shape.points[i].y) <= POINT_SIZE/2) {
-        return true;
+        return i;
       }
     }
-    return false;
+    return -1;
   } else if (shape.constructor.name == "Line") {
     if (distance(x, y, shape.ax, shape.ay) <= POINT_SIZE/2) {
-      return true;
+      return 0;
     } else if (distance(x, y, shape.bx, shape.by) <= POINT_SIZE/2) {
-      return true;
+      return 1;
     } else {
-      return false;
+      return -1;
     }
   } else {
-    return false;
+    return -1;
   }
 }
 
