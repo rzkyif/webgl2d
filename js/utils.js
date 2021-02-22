@@ -157,3 +157,55 @@ export function isInsidePoint(x_, y_, shape, offset, zoomLevel) {
 export function distance(ax, ay, bx, by) {
   return Math.hypot(bx-ax, by-ay);
 }
+
+//function returning new x, y, and size for square during mouse move
+export function resizeSquare(shape, mousex, mousey, anchorx, anchory){
+  let newAtt = [shape.x, shape.y, shape.size];
+  let quadrant = checkQuadrant(anchorx, anchory, mousex, mousey);
+  if(quadrant === '1'){
+    newAtt[0] = anchorx;
+    newAtt[1] = anchory;
+    newAtt[2] = Math.max(mousex - anchorx, mousey - anchory);
+  }
+  else if (quadrant === '2'){
+    newAtt[2] = Math.max(mousex - anchorx, anchory - mousey);
+    newAtt[0] = anchorx;
+    newAtt[1] = anchory - newAtt[2];
+  }
+  else if (quadrant ==='3'){
+    newAtt[2] = Math.max(anchorx - mousex, anchory - mousey);
+    newAtt[0] = anchorx - newAtt[2];
+    newAtt[1] = anchory - newAtt[2];
+  }
+  else{
+    newAtt[2] = Math.max(anchorx - mousex, mousey - anchory);
+    newAtt[0] = anchorx - newAtt[2];;
+    newAtt[1] = anchory;
+  }
+  return newAtt;
+}
+
+//function returning the quadrant of x and y with centerX and centerY as its center.
+export function checkQuadrant(centerX, centerY, x, y){
+  let degree = Math.atan2(y-centerY, x-centerX) * 180/Math.PI;
+  if (degree < 0){
+    degree = 360 + degree
+  }
+  
+  //Quadrant 1
+  if ((degree >=0) && (degree < 90)){
+    return '1'
+  }
+  //Quadrant 2
+  else if((degree >= 90) && (degree < 180)){
+    return '4'
+  }
+  //Quadrant 3
+  else if((degree >= 180) && (degree < 270)){
+    return '3'
+  }
+  //Quadrant 4
+  else{
+    return '2'
+  }
+}

@@ -4,11 +4,11 @@
 
 import { VERTEX_SHADER, FRAGMENT_SHADER } from './shaders.js'
 import { Line, Square, Polygon, Point } from './shapes.js'
-import { resizeCanvasToDisplaySize, createProgramFromShader, hexToRGB, isInside, POINT_SIZE, POINT_COLOR, DEFAULT_COLOR } from './utils.js'
+import { resizeCanvasToDisplaySize, createProgramFromShader, hexToRGB, isInside, POINT_SIZE, POINT_COLOR, DEFAULT_COLOR, resizeSquare } from './utils.js'
 
 let gl, positionBuffer
 let positionAttributeLocation, resolutionUniformLocation, colorUniformLocation, offsetUniformLocation, scaleUniformLocation, pointUniformLocation, pointSizeUniformLocation
-let xmlDocument, shapes, selectedShape, offset, zoomLevel, isMoving, lastX, lastY, isDrawing, currentShape, currentPoint, pointCount, statusElement
+let xmlDocument, shapes, selectedShape, offset, zoomLevel, isMoving, lastX, lastY, isDrawing, currentShape, currentPoint, pointCount, statusElement, anchorX, anchorY
 
 // function for initializing WebGL
 export function initialize(gl_) {
@@ -53,22 +53,6 @@ export function render() {
   gl.uniform1f(pointSizeUniformLocation, POINT_SIZE);
   let point_color = hexToRGB(POINT_COLOR);
 
-  // draw current shape
-  if (currentShape) {
-    let data = currentShape.toVectors();
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
-    // draw shape
-    let rgb = hexToRGB(currentShape.color);
-    gl.uniform4f(colorUniformLocation, rgb[0], rgb[1], rgb[2], 1);
-    gl.uniform1f(pointUniformLocation, 0);
-    gl.drawArrays(currentShape.drawMode, 0, currentShape.drawCount);
-    // draw corner points
-    gl.uniform4f(colorUniformLocation, point_color[0], point_color[1], point_color[2], 1);
-    gl.uniform1f(pointUniformLocation, 1);
-    gl.drawArrays(gl.POINTS, 0, currentShape.drawCount);
-  }
-
   // draw each shapes
   for (let i = 0; i < shapes.length; i++) {
     let data = shapes[i].toVectors();
@@ -83,6 +67,22 @@ export function render() {
     gl.uniform4f(colorUniformLocation, point_color[0], point_color[1], point_color[2], 1);
     gl.uniform1f(pointUniformLocation, 1);
     gl.drawArrays(gl.POINTS, 0, shapes[i].drawCount);
+  }
+
+  // draw current shape
+  if (currentShape) {
+    let data = currentShape.toVectors();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
+    // draw shape
+    let rgb = hexToRGB(currentShape.color);
+    gl.uniform4f(colorUniformLocation, rgb[0], rgb[1], rgb[2], 1);
+    gl.uniform1f(pointUniformLocation, 0);
+    gl.drawArrays(currentShape.drawMode, 0, currentShape.drawCount);
+    // draw corner points
+    gl.uniform4f(colorUniformLocation, point_color[0], point_color[1], point_color[2], 1);
+    gl.uniform1f(pointUniformLocation, 1);
+    gl.drawArrays(gl.POINTS, 0, currentShape.drawCount);
   }
 }
 
@@ -244,8 +244,54 @@ export function drawLine(canvas){
 }
 
 export function startAddSquare() {
-  
+  currentShape = new Square(0,0,0,DEFAULT_COLOR);
+  pointCount = 2;
+  isDrawing = 'square';
 }
+
+export function drawSquare(canvas){
+  canvas.addEventListener('click', (e) =>{
+    if(isDrawing === 'square'){
+      if(e.which === 1){
+        pointCount--;
+        if(pointCount > 0){
+          let realMouseX = (e.offsetX / zoomLevel) - offset[0];
+          let realMouseY = (e.offsetY / zoomLevel) - offset[1];
+          anchorX = realMouseX;
+          anchorY = realMouseY;
+          currentShape.x = anchorX;
+          currentShape.y = anchorY;
+        }
+        else{
+          shapes.push(currentShape);
+          anchorX = null;
+          anchorY = null;
+          isDrawing = false;
+        }
+      }
+    }
+  });
+  canvas.addEventListener('mousemove', (e) =>{
+    if(isDrawing === 'square'){
+      let realMouseX = (e.offsetX / zoomLevel) - offset[0];
+      let realMouseY = (e.offsetY / zoomLevel) - offset[1];
+      
+      if(pointCount === 2){
+        currentShape.x = realMouseX;
+        currentShape.y = realMouseY;
+        render();
+      }
+      else if(pointCount === 1){
+        let newAtt = resizeSquare(currentShape, realMouseX, realMouseY, anchorX, anchorY);
+        currentShape.x = newAtt[0];
+        currentShape.y = newAtt[1];
+        currentShape.size = newAtt[2];
+        render();
+      }
+    }
+  });
+}
+
 export function startAddPolygon(point) {
   currentPoint = new Point(0, 0);
   currentShape = new Polygon([currentPoint], DEFAULT_COLOR);
@@ -257,7 +303,6 @@ export function startAddPolygon(point) {
 export function drawPolygon(canvas) {
   canvas.addEventListener('click', (e) => {
     if (isDrawing == 'polygon') {
-      console.log(e.which);
       if (e.which == 1) {
         pointCount--;
         if (pointCount > 0) {
@@ -286,14 +331,11 @@ export function drawPolygon(canvas) {
 }
 
 export function clickShape(e){
-  // let realMouseX = (e.offsetX / zoomLevel) - offset[0];
-  // let realMouseY = (e.offsetY / zoomLevel) - offset[1];
   selectedShape = isInShapes(e);
-  console.log(selectedShape)
   if(selectedShape){
-    return true
+    return [true, selectedShape.color];
   }
-  return false
+  return [false, DEFAULT_COLOR];
 }
 
 export function changeColor(color){
