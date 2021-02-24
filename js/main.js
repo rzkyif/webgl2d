@@ -4,11 +4,12 @@
 
 import { VERTEX_SHADER, FRAGMENT_SHADER } from './shaders.js'
 import { Line, Square, Polygon, Point } from './shapes.js'
-import { resizeCanvasToDisplaySize, createProgramFromShader, hexToRGB, isInside, POINT_SIZE, POINT_COLOR, DEFAULT_COLOR } from './utils.js'
+import { resizeCanvasToDisplaySize, createProgramFromShader, hexToRGB, isInside, POINT_SIZE, POINT_COLOR, DEFAULT_COLOR, resizeSquare, isInsidePoint } from './utils.js'
 
 let gl, positionBuffer
 let positionAttributeLocation, resolutionUniformLocation, colorUniformLocation, offsetUniformLocation, scaleUniformLocation, pointUniformLocation, pointSizeUniformLocation
-let xmlDocument, shapes, selectedShape, offset, zoomLevel, isMoving, lastX, lastY, isDrawing, currentShape, currentPoint, pointCount, statusElement
+let xmlDocument, shapes, selectedShape, offset, zoomLevel, isMoving, lastX, lastY, isDrawing, currentShape, currentPoint, pointCount, statusElement, anchorX, anchorY, lineBX, lineBY
+let polygonCurrentIndex, polygonCurrentPointIndex, isResizing, lineCurrentIndex, lineCurrentPointIndex
 
 // function for initializing WebGL
 export function initialize(gl_) {
@@ -53,22 +54,6 @@ export function render() {
   gl.uniform1f(pointSizeUniformLocation, POINT_SIZE);
   let point_color = hexToRGB(POINT_COLOR);
 
-  // draw current shape
-  if (currentShape) {
-    let data = currentShape.toVectors();
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
-    // draw shape
-    let rgb = hexToRGB(currentShape.color);
-    gl.uniform4f(colorUniformLocation, rgb[0], rgb[1], rgb[2], 1);
-    gl.uniform1f(pointUniformLocation, 0);
-    gl.drawArrays(currentShape.drawMode, 0, currentShape.drawCount);
-    // draw corner points
-    gl.uniform4f(colorUniformLocation, point_color[0], point_color[1], point_color[2], 1);
-    gl.uniform1f(pointUniformLocation, 1);
-    gl.drawArrays(gl.POINTS, 0, currentShape.drawCount);
-  }
-
   // draw each shapes
   for (let i = 0; i < shapes.length; i++) {
     let data = shapes[i].toVectors();
@@ -83,6 +68,22 @@ export function render() {
     gl.uniform4f(colorUniformLocation, point_color[0], point_color[1], point_color[2], 1);
     gl.uniform1f(pointUniformLocation, 1);
     gl.drawArrays(gl.POINTS, 0, shapes[i].drawCount);
+  }
+
+  // draw current shape
+  if (currentShape) {
+    let data = currentShape.toVectors();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
+    // draw shape
+    let rgb = hexToRGB(currentShape.color);
+    gl.uniform4f(colorUniformLocation, rgb[0], rgb[1], rgb[2], 1);
+    gl.uniform1f(pointUniformLocation, 0);
+    gl.drawArrays(currentShape.drawMode, 0, currentShape.drawCount);
+    // draw corner points
+    gl.uniform4f(colorUniformLocation, point_color[0], point_color[1], point_color[2], 1);
+    gl.uniform1f(pointUniformLocation, 1);
+    gl.drawArrays(gl.POINTS, 0, currentShape.drawCount);
   }
 }
 
@@ -196,11 +197,94 @@ export function addStatusUpdate(status) {
 
 // functions to start adding shapes
 export function startAddLine() {
+  currentShape = new Line(DEFAULT_COLOR);
+  pointCount = 2;
+  isDrawing = "line";
+}
 
+export function drawLine(canvas){
+  canvas.addEventListener('click', (e) => {
+    if (isDrawing == "line"){
+      if (e.which == 1) {     
+        pointCount--;
+        if (pointCount > 0) {
+          let realMouseX = (e.offsetX / zoomLevel) - offset[0];
+          let realMouseY = (e.offsetY / zoomLevel) - offset[1];
+          lineBX = realMouseX;
+          lineBY = realMouseY;
+          currentShape.ax = lineBX;
+          currentShape.ay = lineBY;
+        } else {
+          shapes.push(currentShape);
+          currentShape = null;
+          lineBX = null;
+          lineBY = null;
+          isDrawing = false;
+        }
+      }
+    }
+  });
+  canvas.addEventListener('mousemove', (e) => {
+    if (isDrawing == 'line') {
+      let realMouseX = (e.offsetX / zoomLevel) - offset[0];
+      let realMouseY = (e.offsetY / zoomLevel) - offset[1];
+      currentShape.setB(realMouseX, realMouseY);
+      render();
+    }
+  });
 }
+
 export function startAddSquare() {
-  
+  currentShape = new Square(0,0,0,DEFAULT_COLOR);
+  pointCount = 2;
+  isDrawing = 'square';
 }
+
+// function to add square drawing support
+export function drawSquare(canvas){
+  canvas.addEventListener('click', (e) =>{
+    if(isDrawing === 'square'){
+      if(e.which === 1){
+        pointCount--;
+        if(pointCount > 0){
+          let realMouseX = (e.offsetX / zoomLevel) - offset[0];
+          let realMouseY = (e.offsetY / zoomLevel) - offset[1];
+          anchorX = realMouseX;
+          anchorY = realMouseY;
+          currentShape.x = anchorX;
+          currentShape.y = anchorY;
+        }
+        else{
+          shapes.push(currentShape);
+          anchorX = null;
+          anchorY = null;
+          isDrawing = false;
+          currentShape = null;
+        }
+      }
+    }
+  });
+  canvas.addEventListener('mousemove', (e) =>{
+    if(isDrawing === 'square'){
+      let realMouseX = (e.offsetX / zoomLevel) - offset[0];
+      let realMouseY = (e.offsetY / zoomLevel) - offset[1];
+      
+      if(pointCount === 2){
+        currentShape.x = realMouseX;
+        currentShape.y = realMouseY;
+        render();
+      }
+      else if(pointCount === 1){
+        let newAtt = resizeSquare(currentShape, realMouseX, realMouseY, anchorX, anchorY);
+        currentShape.x = newAtt[0];
+        currentShape.y = newAtt[1];
+        currentShape.size = newAtt[2];
+        render();
+      }
+    }
+  });
+}
+
 export function startAddPolygon(point) {
   currentPoint = new Point(0, 0);
   currentShape = new Polygon([currentPoint], DEFAULT_COLOR);
@@ -212,7 +296,6 @@ export function startAddPolygon(point) {
 export function drawPolygon(canvas) {
   canvas.addEventListener('click', (e) => {
     if (isDrawing == 'polygon') {
-      console.log(e.which);
       if (e.which == 1) {
         pointCount--;
         if (pointCount > 0) {
@@ -240,15 +323,82 @@ export function drawPolygon(canvas) {
   });
 }
 
+export function resizeLine(canvas){
+  lineCurrentPointIndex = null;
+  lineCurrentPointIndex = null;
+  canvas.addEventListener("mousedown", (e) => {
+    if (!isDrawing) {
+      for (let i = 0; i < shapes.length; i++) {
+        if (shapes[i].constructor.name != "Line") {
+          continue;
+        }
+        lineCurrentPointIndex = isInsidePoint(e.offsetX, e.offsetY, shapes[i], offset, zoomLevel);
+        if (lineCurrentPointIndex == 0 || lineCurrentPointIndex == 1) {
+          lineCurrentIndex = i;
+          isResizing = "line";
+        }
+      }
+    }
+  });
+  canvas.addEventListener("mousemove", (e) => {
+    if (isResizing == "line") {
+      let realMouseX = (e.offsetX / zoomLevel) - offset[0];
+      let realMouseY = (e.offsetY / zoomLevel) - offset[1];
+      if (lineCurrentPointIndex == 0) {
+        shapes[lineCurrentIndex].setA(realMouseX,realMouseY);
+      } else if (lineCurrentPointIndex == 1) {
+        shapes[lineCurrentIndex].setB(realMouseX,realMouseY);
+      }
+      render();
+    }
+  });
+  canvas.addEventListener("mouseup", (e) => {
+    if (isResizing == "line") {
+      isResizing = null;
+    }
+  });
+}
+
+// function to add polygon resize support
+export function resizePolygon(canvas) {
+  polygonCurrentIndex = null;
+  polygonCurrentPointIndex = null;
+  canvas.addEventListener("mousedown", (e) => {
+    if (!isDrawing) {
+      for (let i = 0; i < shapes.length; i++) {
+        if (shapes[i].constructor.name != "Polygon") {
+          continue;
+        }
+        polygonCurrentPointIndex = isInsidePoint(e.offsetX, e.offsetY, shapes[i], offset, zoomLevel);
+        if (polygonCurrentPointIndex >= 0) {
+          polygonCurrentIndex = i;
+          isResizing = "polygon";
+        }
+      }
+    }
+  });
+  canvas.addEventListener("mousemove", (e) => {
+    if (isResizing == "polygon") {
+      let realMouseX = (e.offsetX / zoomLevel) - offset[0];
+      let realMouseY = (e.offsetY / zoomLevel) - offset[1];
+      shapes[polygonCurrentIndex].points[polygonCurrentPointIndex].x = realMouseX;
+      shapes[polygonCurrentIndex].points[polygonCurrentPointIndex].y = realMouseY;
+      render()
+    }
+  });
+  canvas.addEventListener("mouseup", (e) => {
+    if (isResizing == "polygon") {
+      isResizing = null;
+    }
+  });
+}
+
 export function clickShape(e){
-  let realMouseX = (e.offsetX / zoomLevel) - offset[0];
-  let realMouseY = (e.offsetY / zoomLevel) - offset[1];
-  selectedShape = isInShapes(realMouseX, realMouseY);
-  console.log(selectedShape)
+  selectedShape = isInShapes(e);
   if(selectedShape){
-    return true
+    return [true, selectedShape.color];
   }
-  return false
+  return [false, DEFAULT_COLOR];
 }
 
 export function changeColor(color){
@@ -256,45 +406,70 @@ export function changeColor(color){
   render();
 }
 
-function isInShapes(x, y){
+function isInShapes(e){
   for(let i = 0; i < shapes.length; i++){
-    if(shapes[i] instanceof Line){
-      // let m = (shapes[i].ay - shapes[i].by)/(shapes[i].ax - shapes[i].bx);
-      // let n = (y - shapes[i].by)/(x - shapes[i].bx);
-      // console.log(m);
-      // console.log(n);
-      // if(m === n ){
-      //   return shapes[i];
-      // }
-      let a = Math.pow( Math.pow(shapes[i].ax - x,2) + Math.pow(shapes[i].ay - y,2),0.5);
-      let b = Math.pow( Math.pow(shapes[i].bx - x,2) + Math.pow(shapes[i].by - y,2),0.5);
-      let c = Math.pow( Math.pow(shapes[i].ax - shapes[i].bx,2) + Math.pow(shapes[i].ay - shapes[i].by,2),0.5);
-
-      let distance;
-
-      if(Math.pow(b,2) > Math.pow(a,2) + Math.pow(c,2)){
-        distance = a;
-      }
-      else if(Math.pow(a,2) > Math.pow(b,2) + Math.pow(c,2)){
-        distance = b;
-      }
-      else{
-        let s = (a+b+c)/2;
-        distance = (2/c) * Math.pow(s*(s-a)*(s-b)*(s-c) ,0.5);
-      }
-      console.log(distance);
-      if(distance < 5){
-        return shapes[i];
-      }
-    }
-    else if(shapes[i] instanceof Square){
-      if ((x >= shapes[i].x) && (y >= shapes[i].y) && (x <= (shapes[i].x + shapes[i].size)) && (y <= (shapes[i].y + shapes[i].size))){
-        return shapes[i];
-      }
-    }
-    else if(shapes[i] instanceof Polygon){
-      return null;
+    if (isInside(e.offsetX, e.offsetY, shapes[i], offset, zoomLevel)){
+      return shapes[i];
     }
   }
   return null;
+}
+
+//function tu add square sizing support;
+export function sizingSquare(canvas){
+  if(!isDrawing){
+    selectedShape = null;
+  
+    canvas.addEventListener('mousedown', (e) =>{
+      let sizing = checkSizing(e);
+      if(sizing[0]?.constructor.name === 'Square'){
+        selectedShape = sizing[0];
+        if(sizing[1] === 0){
+          anchorX = selectedShape.x + selectedShape.size;
+          anchorY = selectedShape.y + selectedShape.size;
+        }
+        else if(sizing[1] === 1){
+          anchorX = selectedShape.x;
+          anchorY = selectedShape.y + selectedShape.size;
+        }
+        else if(sizing[1] === 2){
+          anchorX = selectedShape.x;
+          anchorY = selectedShape.y;
+        }
+        else{
+          anchorX = selectedShape.x + selectedShape.size;
+          anchorY = selectedShape.y;
+        }
+        isResizing = 'square';
+      }
+    })
+    canvas.addEventListener('mousemove', (e) =>{
+      if(isResizing === 'square'){
+        let realMouseX = (e.offsetX / zoomLevel) - offset[0];
+        let realMouseY = (e.offsetY / zoomLevel) - offset[1];
+        let newAtt = resizeSquare(selectedShape, realMouseX, realMouseY, anchorX, anchorY);
+        selectedShape.x = newAtt[0];
+        selectedShape.y = newAtt[1];
+        selectedShape.size = newAtt[2];
+        render();
+      }
+    })
+    canvas.addEventListener('mouseup', (e) =>{
+      if (isResizing == "square") {
+        isResizing = null;
+        selectedShape = null;
+        anchorX = null;
+        anchorY = null;
+      }
+    })
+  }
+}
+
+function checkSizing(e){
+  for(let i = 0; i < shapes.length; i++){
+    if (isInsidePoint(e.offsetX, e.offsetY, shapes[i], offset, zoomLevel) >= 0){
+      return [shapes[i], isInsidePoint(e.offsetX, e.offsetY, shapes[i], offset, zoomLevel)];
+    }
+  }
+  return [null, -1];
 }

@@ -10,7 +10,7 @@ if (!gl) {
   throw new Error("WebGL is not supported!");
 }
 
-import { initialize, loadXml, render, saveXml, addMovement, addZoom, addStatusUpdate, startAddLine, startAddSquare, startAddPolygon, drawPolygon, resetOffsetAndZoom, refreshStatus, clickShape, changeColor } from "./js/main.js"
+import { initialize, loadXml, render, saveXml, addMovement, addZoom, addStatusUpdate, startAddLine, drawLine, startAddSquare, startAddPolygon, drawPolygon, resetOffsetAndZoom, refreshStatus, clickShape, changeColor, drawSquare, resizePolygon, sizingSquare, resizeLine } from "./js/main.js"
 
 // initialize WebGL on canvas
 initialize(gl);
@@ -25,7 +25,6 @@ fs.addEventListener('click', (e) => {
 })
 fs.addEventListener('change', (event) => {
   fs.files[0].text().then((text) => {
-    console.log(text);
     loadXml(text);
     render();
   })
@@ -43,7 +42,7 @@ save.addEventListener('click', (e) =>{
 var addl = document.getElementById('add-line');
 addl.addEventListener('click', (e) => {
   helpPad.classList.add('hidden');
-  startAddLine()
+  startAddLine();
 });
 var adds = document.getElementById('add-square');
 adds.addEventListener('click', (e) => {
@@ -78,8 +77,19 @@ status.addEventListener('click', (e) => {
   render();
 });
 
-// add polygon drawing support
+
+// add line drawing support
+drawLine(canvas);
+resizeLine(canvas);
+
+// add line drawing support
+drawSquare(canvas);
+//add resize square support
+sizingSquare(canvas);
+
+// add polygon drawing and resizing support
 drawPolygon(canvas);
+resizePolygon(canvas);
 
 // add help menu toggling
 var helpButton = document.getElementById('help');
@@ -93,18 +103,16 @@ closeButton.addEventListener('click', (e) => {
 var colorInput = document.getElementById('color')
 canvas.addEventListener('click', (e) => {
   helpPad.classList.add('hidden');
-  // colorInput.toggleAttribute('disabled');
-  if(clickShape(e)){
-    console.log('shape clicked')
+  let status = clickShape(e);
+  if(status[0]){
     colorInput.removeAttribute('disabled');
   }
   else{
-    console.log('canvas clicked')
     colorInput.setAttribute('disabled', 'true');
   }
+  colorInput.value=status[1];
 });
 
-colorInput.addEventListener('change', (e) =>{
-  console.log(e.target.value);
+colorInput.addEventListener('input', (e) =>{
   changeColor(e.target.value);
 });

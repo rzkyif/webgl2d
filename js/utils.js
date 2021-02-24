@@ -68,7 +68,7 @@ export function hexToRGB(hex){
 
 // function to check if coordinate is in a shape
 export function isInside(x_, y_, shape, offset, zoomLevel) {
-  if (isInsidePoint(x_, y_, shape, offset, zoomLevel)) {
+  if (isInsidePoint(x_, y_, shape, offset, zoomLevel) >= 0) {
     return true;
   }
   let x = (x_ / zoomLevel) - offset[0];
@@ -95,9 +95,28 @@ export function isInside(x_, y_, shape, offset, zoomLevel) {
       }
     }
     return true;
-  } else {
-    return false;
+  } else if(shape.constructor.name == "Line"){
+    let a = Math.pow( Math.pow(shape.ax - x,2) + Math.pow(shape.ay - y,2),0.5);
+    let b = Math.pow( Math.pow(shape.bx - x,2) + Math.pow(shape.by - y,2),0.5);
+    let c = Math.pow( Math.pow(shape.ax - shape.bx,2) + Math.pow(shape.ay - shape.by,2),0.5);
+
+    let dist;
+
+    if(Math.pow(b,2) > Math.pow(a,2) + Math.pow(c,2)){
+      dist = a;
+    }
+    else if(Math.pow(a,2) > Math.pow(b,2) + Math.pow(c,2)){
+      dist = b;
+    }
+    else{
+      let s = (a+b+c)/2;
+      dist = (2/c) * Math.pow(s*(s-a)*(s-b)*(s-c) ,0.5);
+    }
+    if(dist < POINT_SIZE/2){
+      return true;
+    }
   }
+  return false;
 }
 
 // function returning true if a shape's point is selected
@@ -108,32 +127,92 @@ export function isInsidePoint(x_, y_, shape, offset, zoomLevel) {
     for (let i = 0; i < 2; i++) {
       for (let j = 0; j < 2; j++) {
         if (distance(x, y, shape.x+shape.size*i, shape.y+shape.size*j) <= POINT_SIZE/2) {
-          return true;
+          if (i == 0 && j == 0) {
+            return 0;
+          } else if (i == 1 && j == 0) {
+            return 1;
+          } else if (i == 0 && j == 1) {
+            return 3;
+          } else {
+            return 2;
+          }
         }
       }
     }
-    return false;
+    return -1;
   } else if (shape.constructor.name == "Polygon") {
     for (let i = 0; i < shape.points.length; i++) {
       if (distance(x, y, shape.points[i].x, shape.points[i].y) <= POINT_SIZE/2) {
-        return true;
+        return i;
       }
     }
-    return false;
+    return -1;
   } else if (shape.constructor.name == "Line") {
     if (distance(x, y, shape.ax, shape.ay) <= POINT_SIZE/2) {
-      return true;
+      return 0;
     } else if (distance(x, y, shape.bx, shape.by) <= POINT_SIZE/2) {
-      return true;
+      return 1;
     } else {
-      return false;
+      return -1;
     }
   } else {
-    return false;
+    return -1;
   }
 }
 
 // function returning the distance between two points
 export function distance(ax, ay, bx, by) {
   return Math.hypot(bx-ax, by-ay);
+}
+
+//function returning new x, y, and size for square during mouse move
+export function resizeSquare(shape, mousex, mousey, anchorx, anchory){
+  let newAtt = [shape.x, shape.y, shape.size];
+  let quadrant = checkQuadrant(anchorx, anchory, mousex, mousey);
+  if(quadrant === '1'){
+    newAtt[0] = anchorx;
+    newAtt[1] = anchory;
+    newAtt[2] = Math.max(mousex - anchorx, mousey - anchory);
+  }
+  else if (quadrant === '2'){
+    newAtt[2] = Math.max(mousex - anchorx, anchory - mousey);
+    newAtt[0] = anchorx;
+    newAtt[1] = anchory - newAtt[2];
+  }
+  else if (quadrant ==='3'){
+    newAtt[2] = Math.max(anchorx - mousex, anchory - mousey);
+    newAtt[0] = anchorx - newAtt[2];
+    newAtt[1] = anchory - newAtt[2];
+  }
+  else{
+    newAtt[2] = Math.max(anchorx - mousex, mousey - anchory);
+    newAtt[0] = anchorx - newAtt[2];;
+    newAtt[1] = anchory;
+  }
+  return newAtt;
+}
+
+//function returning the quadrant of x and y with centerX and centerY as its center.
+export function checkQuadrant(centerX, centerY, x, y){
+  let degree = Math.atan2(y-centerY, x-centerX) * 180/Math.PI;
+  if (degree < 0){
+    degree = 360 + degree
+  }
+  
+  //Quadrant 1
+  if ((degree >=0) && (degree < 90)){
+    return '1'
+  }
+  //Quadrant 2
+  else if((degree >= 90) && (degree < 180)){
+    return '4'
+  }
+  //Quadrant 3
+  else if((degree >= 180) && (degree < 270)){
+    return '3'
+  }
+  //Quadrant 4
+  else{
+    return '2'
+  }
 }
